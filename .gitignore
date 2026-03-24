@@ -1,0 +1,44 @@
+# Python
+backend/venv/
+backend/venv2/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Database
+*.db
+*.sqlite
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+.DS_Store?
+
+# Data
+data/
+sap-o2c-data/
+
+# Test files
+backend/test_*.py
+backend/init_db.py
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
