@@ -2,11 +2,31 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import ChatMessage from './ChatMessage'
 import { streamChat } from '../services/api'
 
-const SUGGESTIONS = [
-  'Which products appear most in billing documents?',
-  'Show me sales orders with a delivery block',
-  'Trace the full flow for billing document 90000001',
-  'Are there any broken O2C flows?',
+const SUGGESTED_QUERIES = [
+  {
+    category: 'Required Queries',
+    queries: [
+      'Which products have the most billing documents?',
+      'Trace billing document 91150216',
+      'Are there any broken or incomplete O2C flows?',
+    ],
+  },
+  {
+    category: 'Customer Analysis',
+    queries: [
+      'Which customer has the most sales orders?',
+      'How many customers are active?',
+      'How many customers are blocked?',
+      'Tell me products purchased by Nelson, Fitzpatrick and Jordan',
+    ],
+  },
+  {
+    category: 'Operations',
+    queries: [
+      'Which plant handles the most deliveries?',
+      'Which deliveries have not been shipped yet?',
+    ],
+  },
 ]
 
 export default function ChatPanel({ onHighlight }) {
@@ -108,16 +128,24 @@ export default function ChatPanel({ onHighlight }) {
 
       <div className="flex-1 overflow-y-auto px-5 py-5 min-h-0">
         {messages.length === 0 ? (
-          <div className="space-y-2 mt-2">
-            <p className="text-xs text-gray-400 mb-3">Suggested questions</p>
-            {SUGGESTIONS.map(s => (
-              <button
-                key={s}
-                onClick={() => send(s)}
-                className="w-full text-left text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-100 px-3 py-2.5 rounded-xl transition-colors leading-snug"
-              >
-                {s}
-              </button>
+          <div className="space-y-4 mt-2">
+            {SUGGESTED_QUERIES.map(({ category, queries }) => (
+              <div key={category}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">
+                  {category}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {queries.map(q => (
+                    <button
+                      key={q}
+                      onClick={() => setInput(q)}
+                      className="text-left text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-lg transition-colors leading-snug"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         ) : (

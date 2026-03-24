@@ -38,16 +38,29 @@ export default function GraphCanvas({ highlightedIds, focusNodeId, onNodeClick }
   }, [focusNodeId, graphData.nodes])
 
   const nodeCanvasObject = useCallback(
-    (node, ctx, globalScale) => {
+    (node, ctx) => {
       if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return
-      if (!highlightedIds?.has(node.id)) return
 
-      const r = 4 // matches nodeRelSize={4} with default nodeVal=1
+      const isHighlighted = highlightedIds?.has(node.id)
+      const radius = isHighlighted ? 8 : 4
+
+      if (isHighlighted) {
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, radius + 4, 0, 2 * Math.PI)
+        ctx.fillStyle = 'rgba(245, 166, 35, 0.2)'
+        ctx.fill()
+      }
+
       ctx.beginPath()
-      ctx.arc(node.x, node.y, r + 3, 0, 2 * Math.PI)
-      ctx.strokeStyle = '#F5A623'
-      ctx.lineWidth   = 1.5 / globalScale
-      ctx.stroke()
+      ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI)
+      ctx.fillStyle = isHighlighted
+        ? '#F5A623'
+        : node.type === 'summary'
+          ? '#4A90D9'
+          : node.type === 'plant'
+            ? '#4CAF50'
+            : '#E8534A'
+      ctx.fill()
     },
     [highlightedIds]
   )
@@ -69,16 +82,8 @@ export default function GraphCanvas({ highlightedIds, focusNodeId, onNodeClick }
           height={dimensions.height}
           graphData={graphData}
           backgroundColor="#f8f8f8"
-          nodeRelSize={4}
-          nodeColor={node =>
-            highlightedIds?.has(node.id)
-              ? '#F5A623'
-              : node.type === 'summary'
-                ? '#4A90D9'
-                : '#E8534A'
-          }
           nodeCanvasObject={nodeCanvasObject}
-          nodeCanvasObjectMode={() => 'after'}
+          nodeCanvasObjectMode={() => 'replace'}
           nodeLabel={node => node.label}
           linkColor={() => 'rgba(74, 144, 217, 0.3)'}
           linkWidth={1}
