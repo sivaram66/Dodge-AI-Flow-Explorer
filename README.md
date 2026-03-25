@@ -105,6 +105,7 @@ backend/app/
 First, deployment. Free hosting platforms (Render, Railway) use ephemeral filesystems — SQLite files get wiped on every redeploy. Neon persists data independently of the application server.
 
 Second, correctness. PostgreSQL's `NUMERIC(15,2)` type handles financial amounts without floating-point precision loss. SQLite's `REAL` type would silently corrupt values like `249.15` INR.
+
 <sub>→ [Database decisions explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3804facccd34b621db8c6)</sub>
 ---
 
@@ -139,6 +140,7 @@ tool calls.
 Three fixed tools cover the required queries with verified SQL. 
 A fourth dynamic tool validates LLM-generated SQL through 
 sqlglot AST parsing before execution.
+
 <sub>→ [LLM prompting strategy explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3802bbf61f7e1ead5d36e)</sub>
 ---
 
@@ -154,6 +156,7 @@ answered from general knowledge alone.
 
 On error the classifier fails open — a Groq outage should not 
 kill the chat feature.
+
 <sub>→ [Guardrails design explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380e09bc2f16fb7b1c00a)</sub>
 ---
 
