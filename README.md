@@ -24,7 +24,7 @@ The system ingests a real SAP O2C dataset, models it as a graph of interconnecte
 
 One of the core features of this system is that every node 
 is connected to related entities. You are not just viewing 
-data — you are navigating a live graph. Clicking any 
+data - you are navigating a live graph. Clicking any 
 connected item in the inspector opens that entity, letting 
 you trace the complete business flow from one end to the 
 other without typing a single query.
