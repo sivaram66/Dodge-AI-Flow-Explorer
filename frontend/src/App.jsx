@@ -46,7 +46,7 @@ export default function App() {
           return
         }
       } catch {
-        // server still sleeping
+        // server still sleepingg
       }
       if (!cancelled) timer = setTimeout(ping, 3000)
     }
