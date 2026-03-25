@@ -1,8 +1,9 @@
 # Dodge AI Flow Explorer
 
 A graph-based data explorer for SAP Order-to-Cash (O2C) data with an LLM-powered conversational query interface.
-
+**Notion Deep Dive:** https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link
 **Live Demo:** https://dodge-ai-flow-explorer.vercel.app
+
 > ⚠️ **Note:** Backend is hosted on Render free tier. 
 > First load may take 30-60 seconds to wake up. 
 > The app shows a loading screen while this happens.
@@ -27,7 +28,7 @@ connected item in the inspector opens that entity, letting
 you trace the complete business flow from one end to the 
 other without typing a single query.
 
-→ [See the complete O2C flow walkthrough with screenshots](https://notion.so/your-page-id#block-id)
+→ [See the complete O2C flow walkthrough with screenshots](https://www.notion.so/32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380fbb57dc2e555345ae3)
 
 ---
 
@@ -40,7 +41,7 @@ Ask "Which products have the most billing documents?" —
 the product nodes highlight gold.
 The graph and the chat work together, not separately.
 
-→ [See node highlighting in action with screenshots](https://notion.so/your-page-id#block-id)
+→ [See node highlighting in action with screenshots](https://www.notion.so/32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380eeabb9cafc614103b3)
 
 --- 
 ## Tech Stack
