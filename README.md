@@ -18,7 +18,31 @@ The system ingests a real SAP O2C dataset, models it as a graph of interconnecte
 - **Guardrails** — Out-of-scope queries (general knowledge, math, creative writing) are rejected before reaching the LLM.
 
 ---
+## Graph Navigation
 
+One of the core features of this system is that every node 
+is connected to related entities. You are not just viewing 
+data — you are navigating a live graph. Clicking any 
+connected item in the inspector opens that entity, letting 
+you trace the complete business flow from one end to the 
+other without typing a single query.
+
+→ [See the complete O2C flow walkthrough with screenshots](https://notion.so/your-page-id#block-id)
+
+---
+
+## Node Highlighting
+
+When you ask a question in the chat, every node referenced 
+in the answer lights up in the graph in real time.
+
+Ask "Which products have the most billing documents?" — 
+the product nodes highlight gold.
+The graph and the chat work together, not separately.
+
+→ [See node highlighting in action with screenshots](https://notion.so/your-page-id#block-id)
+
+--- 
 ## Tech Stack
 
 | Layer | Technology |
@@ -108,19 +132,6 @@ Second, correctness. PostgreSQL's `NUMERIC(15,2)` type handles financial amounts
 
 A row becomes a **node** if it is an entity a user would click on and ask "tell me about this thing." It becomes an **edge** if its job is to connect two nodes.
 
-| Node Type | Source Table | Count |
-|---|---|---|
-| sales_order | sales_order_headers | 100 |
-| delivery | outbound_delivery_headers | 86 |
-| billing_doc | billing_document_headers | 163 |
-| journal_entry | journal_entry_items (deduped by accountingDocument) | 123 |
-| payment | payments_accounts_receivable | 120 |
-| customer | business_partners | 8 |
-| product | products | 69 |
-| plant | plants (only those referenced by deliveries) | 5 |
-
-**Total: 674 nodes, 1,066 edges**
-
 ### Two-Graph Architecture
 
 The system maintains two graph objects in memory at startup:
@@ -174,20 +185,6 @@ The guardrail system uses a two-layer approach.
 
 ---
 
-## Example Queries
-
-| Query | What It Tests |
-|---|---|
-| Which products have the most billing documents? | Aggregation, JOIN across billing_document_items and products |
-| Trace billing document 91150216 | Four-table join chain through item tables |
-| Are there any broken O2C flows? | UNION ALL with NOT EXISTS subqueries |
-| Which customer has the most sales orders? | GROUP BY with business_partners join |
-| Which plant handles the most deliveries? | Delivery→Plant edge via outbound_delivery_items |
-| How many customers are blocked? | Boolean filter on businessPartnerIsBlocked |
-| Tell me products purchased by Nelson, Fitzpatrick and Jordan | Multi-step: customer name → ID → order items → products |
-
----
-
 ## Running Locally
 
 ```bash
@@ -217,11 +214,3 @@ cd frontend
 npm install
 npm run dev
 ```
-
----
-
-## Submission
-
-- **Live Demo:** https://dodge-ai-flow-explorer.vercel.app
-- **GitHub:** https://github.com/your-username/dodgeai-flow-explorer
-- **AI Coding Logs:** Included in `/ai-logs/` directory
