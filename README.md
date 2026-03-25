@@ -6,7 +6,7 @@ A graph-based data explorer for SAP Order-to-Cash (O2C) data with an LLM-powered
 
 **Live Demo:** https://dodge-ai-flow-explorer.vercel.app
 
-> ⚠️ **Note:** Backend is hosted on Render free tier. 
+> **Note:** Backend is hosted on Render free tier. 
 > First load may take 30-60 seconds to wake up. 
 > The app shows a loading screen while this happens.
 
