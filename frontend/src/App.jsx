@@ -40,7 +40,8 @@ export default function App() {
 
     async function ping() {
       try {
-        const res = await fetch(`${BASE}/health`)
+        const BACKEND = import.meta.env.VITE_API_URL?.replace('/api', '') || ''
+        const res = await fetch(`${BACKEND}/health`)
         if (res.ok) {
           if (!cancelled) setServerReady(true)
           return
