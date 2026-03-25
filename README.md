@@ -95,7 +95,7 @@ backend/app/
     └── guardrails.py    # in-scope/out-of-scope classifier
 ```
 
-→ [Architecture explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380cab52ac3208a90f141)
+→ [Architecture explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380b0b693f4e4a222bf47)
 
 ---
 
@@ -107,7 +107,7 @@ First, deployment. Free hosting platforms (Render, Railway) use ephemeral filesy
 
 Second, correctness. PostgreSQL's `NUMERIC(15,2)` type handles financial amounts without floating-point precision loss. SQLite's `REAL` type would silently corrupt values like `249.15` INR.
 
-→ [Database decisions explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3804facccd34b621db8c6)
+###→ [Database decisions explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3804facccd34b621db8c6)
 ---
 
 ## Graph Data Model
