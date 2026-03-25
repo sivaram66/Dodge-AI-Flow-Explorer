@@ -153,7 +153,9 @@ SQL RULES (for execute_query steps)
 KEY TABLES AND COLUMNS:
   sales_order_headers:       "salesOrder" PK, "soldToParty", "creationDate", "totalNetAmount"
   sales_order_items:         "salesOrder", "material", "requestedQuantity", "netAmount"
-  outbound_delivery_headers: "deliveryDocument" PK, "actualGoodsMovementDate"
+  outbound_delivery_headers: "deliveryDocument" PK, "actualGoodsMovementDate",
+                             "shippingPoint", "creationDate",
+                             "overallGoodsMovementStatus" (A=not processed, B=partial, C=complete)
   outbound_delivery_items:   "deliveryDocument", "referenceSdDocument" (= salesOrder), "plant"
   plants:                    "plant" PK, "plantName", "salesOrganization"
                              Join: plants."plant" = outbound_delivery_items."plant"
@@ -175,6 +177,43 @@ KEY TABLES AND COLUMNS:
 CANCELLED BILLING DOCUMENTS:
   Use: WHERE "billingDocumentIsCancelled" = true
   NOT "billingDocumentStatus" — that column does not exist.
+
+DELIVERY SHIPPING STATUS:
+  Table: outbound_delivery_headers
+  Column: "actualGoodsMovementDate" — MUST be double-quoted (camelCase)
+  Not shipped: WHERE "actualGoodsMovementDate" IS NULL
+  Shipped:     WHERE "actualGoodsMovementDate" IS NOT NULL
+  Also useful: "overallGoodsMovementStatus" (A=not processed, B=partial, C=complete)
+  Primary key: "deliveryDocument"
+
+  Example query for unshipped deliveries:
+    SELECT "deliveryDocument", "creationDate",
+           "shippingPoint", "overallGoodsMovementStatus"
+    FROM outbound_delivery_headers
+    WHERE "actualGoodsMovementDate" IS NULL
+    LIMIT 20
+
+CUSTOMER BLOCKING STATUS:
+  Table: business_partners
+  Column: "businessPartnerIsBlocked" (boolean) — MUST be double-quoted
+  Blocked: WHERE "businessPartnerIsBlocked" = true
+  Active:  WHERE "businessPartnerIsBlocked" = false
+  Primary key: "businessPartner"
+
+  NEVER use GROUP BY on business_partners for simple blocked/active counts —
+  just filter with WHERE and return individual rows; the summarizer counts them.
+
+  Example — blocked customers:
+    SELECT "businessPartner", "businessPartnerFullName", "businessPartnerIsBlocked"
+    FROM business_partners
+    WHERE "businessPartnerIsBlocked" = true
+    LIMIT 100
+
+  Example — active customers:
+    SELECT "businessPartner", "businessPartnerFullName", "businessPartnerIsBlocked"
+    FROM business_partners
+    WHERE "businessPartnerIsBlocked" = false
+    LIMIT 100
 """.strip()
 
 
