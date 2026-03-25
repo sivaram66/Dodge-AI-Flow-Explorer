@@ -29,6 +29,7 @@ data — you are navigating a live graph. Clicking any
 connected item in the inspector opens that entity, letting 
 you trace the complete business flow from one end to the 
 other without typing a single query.
+Letting you trace the complete O2C business flow from Customer → Sales Order → Delivery → Billing → Journal Entry without typing a single query.
 
 → [See the complete O2C flow walkthrough with screenshots](https://www.notion.so/32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380fbb57dc2e555345ae3)
 
@@ -119,14 +120,6 @@ First, deployment. Free hosting platforms (Render, Railway) use ephemeral filesy
 
 Second, correctness. PostgreSQL's `NUMERIC(15,2)` type handles financial amounts without floating-point precision loss. SQLite's `REAL` type would silently corrupt values like `249.15` INR.
 
-**Key schema decisions:**
-
-- Field names preserved as camelCase from the source JSONL to simplify the loader. Every camelCase column is double-quoted in PostgreSQL queries to prevent case folding (`"salesOrder"` not `salesOrder`).
-- `statement_cache_size=0` on the asyncpg pool — required for Neon's PgBouncer connection pooler running in transaction mode, which does not support prepared statements.
-- Indices on every join key used by the three core queries — `referenceSdDocument`, `referenceDocument`, `clearingAccountingDocument`, `soldToParty`, `billingDocumentType`.
-
-**Critical join discovery:** The SO→Delivery link does not exist on delivery headers. It lives in `outbound_delivery_items.referenceSdDocument`. Similarly, the Delivery→Billing link goes through `billing_document_items.referenceSdDocument`. This required two additional item tables in the join chain that a naive schema design would miss.
-
 ---
 
 ## Graph Data Model
@@ -166,14 +159,6 @@ Three fixed tools cover the required assignment queries with verified SQL:
 
 A fourth tool, `execute_query`, handles everything else. It accepts LLM-generated SQL validated through a `sqlglot` AST parser before execution — checking statement type (SELECT only), table whitelist, and a 5-second `statement_timeout` for the dynamic path only.
 
-### Schema Injection
-
-The system prompt gives the LLM the full join chain explicitly because the correct joins go through item tables, not header tables. LLM-generated SQL that joins headers directly produces wrong results without error. The prompt also specifies that all camelCase columns must be double-quoted in PostgreSQL.
-
-### Node Highlighting
-
-After every query, `_extract_node_ids` inspects result rows for known ID columns (`businessPartner`, `salesOrder`, `billingDocument`, etc.) and maps them to graph node IDs. For COUNT queries that return no ID columns, a secondary query fetches the actual entity IDs from the same table. These are emitted as a final SSE `highlight` event after the streaming prose completes.
-
 ---
 
 ## Guardrails
@@ -183,8 +168,6 @@ The guardrail system uses a two-layer approach.
 **Layer 1 — Deterministic keyword patterns** run before any LLM call. A set of compiled regex patterns (`re.IGNORECASE`) immediately rejects messages matching phrases like `poem`, `write me`, `capital of`, `how does * work`, `explain what`, and arithmetic expressions. This handles the most obvious off-topic requests with zero latency and zero token cost.
 
 **Layer 2 — LLM classifier** handles ambiguous cases. A fast, cheap model (`llama-3.1-8b-instant`) with `temperature=0` and `max_tokens=80` returns `{"is_in_scope": bool, "reason": "..."}`. The classifier prompt uses a principle-based rule rather than a list of examples: a message is in scope only if all three conditions hold simultaneously — it requires a database query to answer, the data exists in this specific O2C dataset, and the answer cannot be given from general knowledge alone. On error or timeout, the classifier fails open (allows the message through) so a Groq outage does not kill the chat feature.
-
-**Conversation history** is passed to the classifier so follow-up messages like a bare document ID (`91150216`) are not rejected as out-of-scope when they follow an assistant question asking for that ID.
 
 ---
 
