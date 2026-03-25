@@ -77,6 +77,7 @@ FastAPI routes (/api/graph/*, /api/chat)
 React Frontend
 ```
 
+
 ### Backend Structure
 
 ```
@@ -94,21 +95,7 @@ backend/app/
     └── guardrails.py    # in-scope/out-of-scope classifier
 ```
 
-### Frontend Structure
-
-```
-frontend/src/
-├── App.jsx                    # layout, highlight state
-├── components/
-│   ├── GraphCanvas.jsx        # react-force-graph-2d canvas
-│   ├── NodeInspector.jsx      # node detail panel on click
-│   ├── ChatPanel.jsx          # chat UI with SSE streaming
-│   └── ChatMessage.jsx        # message renderer with markdown
-├── hooks/
-│   └── useHighlight.js        # shared highlight Set state
-└── services/
-    └── api.js                 # all fetch/SSE calls
-```
+→ [Architecture explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380cab52ac3208a90f141)
 
 ---
 
@@ -120,22 +107,18 @@ First, deployment. Free hosting platforms (Render, Railway) use ephemeral filesy
 
 Second, correctness. PostgreSQL's `NUMERIC(15,2)` type handles financial amounts without floating-point precision loss. SQLite's `REAL` type would silently corrupt values like `249.15` INR.
 
+→ [Database decisions explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3804facccd34b621db8c6)
 ---
 
 ## Graph Data Model
 
-### Node/Edge Decision Rule
+A row becomes a **node** if a user would click on it and ask 
+"tell me about this." It becomes an **edge** if its job is to 
+connect two nodes.
 
-A row becomes a **node** if it is an entity a user would click on and ask "tell me about this thing." It becomes an **edge** if its job is to connect two nodes.
-
-### Two-Graph Architecture
-
-The system maintains two graph objects in memory at startup:
-
-- **Summary graph** — 8 nodes (one per entity type) with counts and flow edges. Served as the initial canvas render. Derived from the full graph in Python — no extra DB queries.
-- **Full graph** — individual nodes keyed by ID (`O(1)` lookup for highlight), edge list, and a `by_type` index for expand-on-click.
-
-This design avoids rendering 674 nodes on initial load while keeping the full graph available for chat-driven highlighting.
+Two graph objects in memory — a summary graph (8 nodes, fast 
+initial render) and a full graph (674 nodes keyed by ID for 
+O(1) highlight lookup).
 
 ---
 
@@ -145,30 +128,37 @@ This design avoids rendering 674 nodes on initial load while keeping the full gr
 
 Every chat message goes through two LLM calls:
 
-**Round 1 (planning):** A non-streaming call with `temperature=0` returns a JSON execution plan — a list of tool calls with parameters. If the user's message lacks required information (e.g. asks to trace a flow but provides no billing document ID), Round 1 returns `{"ask": "..."}` instead of steps, and the clarification is shown to the user without executing any SQL.
+**Round 1 (planning)** — `temperature=0`, returns a JSON 
+execution plan. If required info is missing, returns a 
+clarification request instead. No SQL runs until the user 
+provides what's needed.
 
-**Round 2 (streaming):** After tool results are collected, a streaming call with `temperature=0.1` and **no tools parameter** generates the final prose answer. Removing tools from Round 2 prevents the model from attempting a second tool call in XML format, which Groq rejects.
+**Round 2 (streaming)** — `temperature=0.1`, no tools 
+parameter. Streams the prose answer. Removing tools from 
+Round 2 prevents Groq's 400 error on XML-format second 
+tool calls.
 
-### Tool Design
+Three fixed tools cover the required queries with verified SQL. 
+A fourth dynamic tool validates LLM-generated SQL through 
+sqlglot AST parsing before execution.
 
-Three fixed tools cover the required assignment queries with verified SQL:
-
-- `get_top_products_by_billing_count` — verified against real data, returns top N products by billing document frequency
-- `trace_document_flow` — full SO→Delivery→Billing→JournalEntry join using the correct item-table join chain
-- `get_broken_flows` — UNION ALL of delivered-not-billed and billed-without-delivery using `NOT EXISTS` subqueries
-
-A fourth tool, `execute_query`, handles everything else. It accepts LLM-generated SQL validated through a `sqlglot` AST parser before execution — checking statement type (SELECT only), table whitelist, and a 5-second `statement_timeout` for the dynamic path only.
-
+→ [LLM prompting strategy explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3802bbf61f7e1ead5d36e)
 ---
 
 ## Guardrails
 
-The guardrail system uses a two-layer approach.
+Two layers — regex patterns reject obvious cases (poems, math, 
+general knowledge) with zero latency before any LLM call.
 
-**Layer 1 — Deterministic keyword patterns** run before any LLM call. A set of compiled regex patterns (`re.IGNORECASE`) immediately rejects messages matching phrases like `poem`, `write me`, `capital of`, `how does * work`, `explain what`, and arithmetic expressions. This handles the most obvious off-topic requests with zero latency and zero token cost.
+A principle-based LLM classifier handles ambiguous cases using 
+three conditions that must ALL be true for in-scope: requires 
+a database query, data exists in this dataset, cannot be 
+answered from general knowledge alone.
 
-**Layer 2 — LLM classifier** handles ambiguous cases. A fast, cheap model (`llama-3.1-8b-instant`) with `temperature=0` and `max_tokens=80` returns `{"is_in_scope": bool, "reason": "..."}`. The classifier prompt uses a principle-based rule rather than a list of examples: a message is in scope only if all three conditions hold simultaneously — it requires a database query to answer, the data exists in this specific O2C dataset, and the answer cannot be given from general knowledge alone. On error or timeout, the classifier fails open (allows the message through) so a Groq outage does not kill the chat feature.
+On error the classifier fails open — a Groq outage should not 
+kill the chat feature.
 
+→ [Guardrails design explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a380e09bc2f16fb7b1c00a)
 ---
 
 ## Running Locally
