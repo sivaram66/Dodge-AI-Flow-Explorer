@@ -106,7 +106,7 @@ First, deployment. Free hosting platforms (Render, Railway) use ephemeral filesy
 
 Second, correctness. PostgreSQL's `NUMERIC(15,2)` type handles financial amounts without floating-point precision loss. SQLite's `REAL` type would silently corrupt values like `249.15` INR.
 
-*→ [Database decisions explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3804facccd34b621db8c6)*
+<sub>→ [Database decisions explained in detail](https://www.notion.so/Dodge-AI-Flow-Explorer-Deep-Dive-32e29415e9a38030b2eee219bf0a2577?source=copy_link#32e29415e9a3804facccd34b621db8c6)</sub>
 ---
 
 ## Graph Data Model
