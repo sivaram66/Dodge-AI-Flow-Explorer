@@ -56,6 +56,13 @@ The graph and the chat work together, not separately.
 | LLM | Groq API (llama-3.3-70b-versatile) |
 | Deployment | Render (backend) + Vercel (frontend) |
 
+> **Note:** I am familiar with Node.js and Express and could 
+> have built this backend with either. I chose Python + FastAPI 
+> because this project involves data engineering (loading 19 JSONL 
+> folders, batch inserts, type coercion) and LLM integration 
+> (asyncpg, sqlglot, Groq SDK) — areas where Python's ecosystem 
+> is more mature and the libraries are better documented.
+
 ---
 
 ## Architecture
